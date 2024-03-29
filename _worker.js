@@ -39,7 +39,7 @@ export default {
 		if ( !(token == mytoken || url.pathname == ("/"+ mytoken) || url.pathname.includes("/"+ mytoken + "?")) ) {
 			if ( TG == 1 && url.pathname !== "/" && url.pathname !== "/favicon.ico" ) await sendMessage("#异常访问", request.headers.get('CF-Connecting-IP'), `UA: ${userAgent}</tg-spoiler>\n域名: ${url.hostname}\n<tg-spoiler>入口: ${url.pathname + url.search}</tg-spoiler>`);
 			return new Response('Hello World!', { status: 403 });
-		} else if ( TG == 1 || !userAgent.includes('subconverter') ){
+		} else if ( TG == 1 || !userAgent.includes('subconverter') || !userAgent.includes('null')){
 			await sendMessage("#获取订阅", request.headers.get('CF-Connecting-IP'), `UA: ${userAgent}</tg-spoiler>\n域名: ${url.hostname}\n<tg-spoiler>入口: ${url.pathname + url.search}</tg-spoiler>`);
 		}
 
@@ -107,7 +107,9 @@ export default {
 				for (const response of responses) {
 					if (response.ok) {
 						const content = await response.text();
-						req_data += atob(content) + '\n';
+						//console.log(content);
+						req_data += base64Decode(content) + '\n';
+						//console.log(req_data);
 					}
 				}
 			} catch (error) {
@@ -124,6 +126,7 @@ export default {
 			//console.log(result);
 
 			const base64Data = btoa(result);
+			//console.log(base64Data);
 			return new Response(base64Data ,{
 				headers: { 
 					"content-type": "text/plain; charset=utf-8",
@@ -155,4 +158,11 @@ async function sendMessage(type, ip, add_data = "") {
 			}
 		});
 	}
+}
+
+// 将 base64 编码的字符串转换为 utf-8 编码的字符
+function base64Decode(str) {
+	const bytes = new Uint8Array(atob(str).split('').map(c => c.charCodeAt(0)));
+	const decoder = new TextDecoder('utf-8');
+	return decoder.decode(bytes);
 }
